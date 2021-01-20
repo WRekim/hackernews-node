@@ -1,0 +1,11 @@
+{
+  "name": "hackernews-node",
+  "version": "1.0.0",
+  "description": "graphql-node tutorial",
+  "main": "src/index.js",
+  "repository": "git@github.com:WRekim/hackernews-node.git",
+  "license": "MIT",
+  "dependencies": {
+    "apollo-server": "^2.19.2"
+  }
+}
