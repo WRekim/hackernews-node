@@ -1,24 +1,15 @@
 const { ApolloServer } = require('apollo-server');
+const fs = require('fs');
+const path = require('path');
 
-//Defines GraphQL schema 
-const typeDefs = `
-    type Query {
-        info: String!
-        feed: [Link!]!
-    }
-
-    type Link {
-        id: ID!
-        description: String!
-        url: String!
-    }
-`
 
 let links = [{
     id: 'link-0',
     url: 'www.howtographql.com',
     description: 'Fullstack tutorial for GraphQL'
-  }]
+}]
+
+let linksIdCount = links.length;
 
 //Implementation of schema 
 const resolvers = {
@@ -26,15 +17,31 @@ const resolvers = {
         info: () => 'This is the API of a Hackernews Clone',
         feed: () => links,
     },
-    // Link: {
-    //     id: (parent) => parent.id,
-    //     description: (parent) => parent.description,
-    //     url: (parent) => parent.url
-    // }
+    Mutation: {
+        addLink: (parent, { description, url }) => {
+            const newPost = {
+                id: `link-${linksIdCount++}`,
+                url,
+                description
+            }
+            links.push(newPost);
+            return newPost;
+        },
+        deleteLink: (parent, { id }) => {
+            const indexOfLinkToDelete = links.findIndex(link => link.id === id);
+            const linksToDelete = links.splice(indexOfLinkToDelete, 1);
+            return linksToDelete[0];
+        },
+        updateLink: (parent, { id, url, description }) => {
+            const newLink = {url, description};
+            const linkToUpdate = links.find(link => link.id === id);
+            return Object.assign(linkToUpdate, newLink); 
+        }
+    }
 }
 
 const server = new ApolloServer({
-    typeDefs,
+    typeDefs: fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8'),
     resolvers
 })
 
