@@ -11,7 +11,6 @@ async function main() {
     })
 
     const allLinks = prisma.link.findMany().then((links) => console.log(links))
-    prisma.link.delete()
 }
 
 main()
