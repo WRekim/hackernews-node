@@ -38,16 +38,21 @@ async function login(parent, args, context) {
     }
 }
 
-function postLink(parent, { description, url }, context) {
+async function postLink(parent, { description, url }, context) {
 
     const { userId } = context;
 
-    const newLink = {
-        url,
-        description,
-        postedBy: { connect: { id: userId }}
-    }
-    return context.prisma.link.create({ data: newLink });
+    const newLink = await context.prisma.link.create({
+        data: {
+            url,
+            description,
+            postedBy: { connect: { id: userId } }
+        }
+    })
+
+    context.pubsub.publish("NEW_LINK", newLink);
+
+    return newLink;
 }
 
 async function deleteLink(parent, { id }, context) {
