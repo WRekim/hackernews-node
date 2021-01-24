@@ -79,10 +79,49 @@ async function updateLink(parent, { id, url, description }, context) {
     return updatedLink;
 }
 
+async function vote(parent, { linkId }, context) {
+    const { userId } = context;
+    // OR const userId = getUserId(context) 
+
+    const vote = await context.prisma.vote.findUnique({
+        where: {
+            linkId_userId: {
+                linkId: Number(linkId),
+                userId: userId
+            }
+        }
+    })
+
+    if (Boolean(vote)) {
+        throw new Error(`Already voted for link ${Number(linkId)}`)
+    }
+
+    // const user = await context.prisma.user.findUnique({ where: { id: userId }})
+    // const link = await context.prisma.link.findUnique({ where: { id: linkId } });
+    // const newVote = await context.prisma.vote.create({
+    //     data: {
+    //         user,
+    //         link
+    //     }
+    // })
+    // Not needed to find the user and link, because you can relate them using 'connect' and the ID's
+
+    const newVote = await context.prisma.vote.create({
+        data: {
+            user: { connect: { id: userId }},
+            link: { connect: { id: Number(linkId)}}
+        }
+    })
+
+    context.pubsub.publish("NEW_VOTE", newVote);
+    return newVote; 
+}
+
 module.exports = {
     signup,
     login,
     postLink,
     deleteLink,
-    updateLink
+    updateLink,
+    vote
 }
